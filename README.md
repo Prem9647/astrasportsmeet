@@ -95,6 +95,15 @@ The default admin login credentials are:
 - Player management
 - Responsive design
 
+## Troubleshooting Deployment Issues
+
+If you encounter the error `command 'react-scripts build' exited with 126` during Vercel deployment:
+
+1. Make sure you have a `vercel.json` file in the frontend directory with proper build configuration
+2. The file should be automatically created in this project, but if missing, add it with the proper build settings
+3. Ensure your environment variables are properly set in the Vercel dashboard
+4. Check that you're using a compatible Node.js version (14.x or 16.x)
+
 ## Technologies Used
 
 - Frontend: React, React Router
