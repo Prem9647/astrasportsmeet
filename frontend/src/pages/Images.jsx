@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { api } from '../utils/api';
 
 const Images = () => {
   const [livePhotos, setLivePhotos] = useState([]);
 
   useEffect(() => {
     // Fetch live photos from the API
-    fetch("http://localhost:5000/api/admin/live-photos")
+    api.get("/api/admin/live-photos")
       .then(res => res.json())
       .then(photos => setLivePhotos(photos));
   }, []);
@@ -46,7 +47,7 @@ const Images = () => {
               {livePhotos.map((photo, index) => (
                 <div key={photo._id || index} className="gallery-item">
                   <div className="gallery-image" style={{ 
-                    backgroundImage: `url('http://localhost:5000${photo.imageUrl}')`,
+                    backgroundImage: `url('${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${photo.imageUrl}')`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center'
                   }}></div>

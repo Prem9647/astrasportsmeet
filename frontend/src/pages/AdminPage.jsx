@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { api } from '../utils/api';
 
 export default function AdminPage() {
   const [teams, setTeams] = useState([]);
@@ -13,7 +14,7 @@ export default function AdminPage() {
 
 
   const loadTeams = () => {
-    fetch("http://localhost:5000/api/teams")
+    api.get("/api/teams")
       .then(res => res.json())
       .then(setTeams);
   };
@@ -21,7 +22,7 @@ export default function AdminPage() {
   useEffect(loadTeams, []);
 
   const loadEvents = () => {
-    fetch("http://localhost:5000/api/events")
+    api.get("/api/events")
       .then(res => res.json())
       .then(setEvents);
   };
@@ -31,40 +32,28 @@ export default function AdminPage() {
   }, []);
 
   const addPoint = (teamId, type) => {
-    fetch("http://localhost:5000/api/admin/add-point", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ teamId, type })
-    }).then(loadTeams);
+    api.adminPost("/api/admin/add-point", { teamId, type })
+      .then(loadTeams);
   };
 
   const removePoint = (teamId, type) => {
-    fetch("http://localhost:5000/api/admin/remove-point", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ teamId, type })
-    }).then(loadTeams);
+    api.adminPost("/api/admin/remove-point", { teamId, type })
+      .then(loadTeams);
   };
 
   const resetPoints = (teamId) => {
     if (window.confirm("Are you sure you want to reset all points for this team?")) {
-      fetch("http://localhost:5000/api/admin/reset-points", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ teamId })
-      }).then(loadTeams);
+      api.adminPost("/api/admin/reset-points", { teamId })
+        .then(loadTeams);
     }
   };
 
   const addTeam = () => {
-    fetch("http://localhost:5000/api/admin/add-team", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: teamName })
-    }).then(() => {
-      setTeamName("");
-      loadTeams();
-    });
+    api.adminPost("/api/admin/add-team", { name: teamName })
+      .then(() => {
+        setTeamName("");
+        loadTeams();
+      });
   };
 
   const addPlayerPair = () => {
@@ -82,14 +71,7 @@ export default function AdminPage() {
 
     const updatedPlayers = [...event.players, { player1, player2: player2 || "-" }];
     
-    fetch(`http://localhost:5000/api/admin/events/${selectedEvent}/players`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "x-admin-access": process.env.REACT_APP_ADMIN_ACCESS_KEY || "admin123"
-      },
-      body: JSON.stringify({ players: updatedPlayers })
-    })
+    api.adminPut(`/api/admin/events/${selectedEvent}/players`, { players: updatedPlayers })
     .then(res => res.json())
     .then(data => {
       if (data.success !== false) {
@@ -130,14 +112,7 @@ export default function AdminPage() {
     const updatedPlayers = [...event.players];
     updatedPlayers[editingIndex] = { player1, player2: player2 || "-" };
     
-    fetch(`http://localhost:5000/api/admin/events/${selectedEvent}/players`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "x-admin-access": process.env.REACT_APP_ADMIN_ACCESS_KEY || "admin123"
-      },
-      body: JSON.stringify({ players: updatedPlayers })
-    })
+    api.adminPut(`/api/admin/events/${selectedEvent}/players`, { players: updatedPlayers })
     .then(res => res.json())
     .then(data => {
       if (data.success !== false) {
@@ -172,14 +147,7 @@ export default function AdminPage() {
 
     const updatedPlayers = event.players.filter((_, i) => i !== index);
     
-    fetch(`http://localhost:5000/api/admin/events/${selectedEvent}/players`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "x-admin-access": process.env.REACT_APP_ADMIN_ACCESS_KEY || "admin123"
-      },
-      body: JSON.stringify({ players: updatedPlayers })
-    })
+    api.adminPut(`/api/admin/events/${selectedEvent}/players`, { players: updatedPlayers })
     .then(res => res.json())
     .then(data => {
       if (data.success !== false) {
@@ -204,13 +172,7 @@ export default function AdminPage() {
     const formData = new FormData();
     formData.append("photo", photoFile);
 
-    fetch("http://localhost:5000/api/admin/upload-photo", {
-      method: "POST",
-      headers: {
-        "x-admin-access": process.env.REACT_APP_ADMIN_ACCESS_KEY || "admin123"
-      },
-      body: formData
-    })
+    api.upload("/api/admin/upload-photo", formData)
     .then(res => res.json())
     .then(data => {
       if (data.success) {

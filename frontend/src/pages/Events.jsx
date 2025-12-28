@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import EventModal from '../components/EventModal';
+import { api } from '../utils/api';
 
 const Events = () => {
   const [filter, setFilter] = useState('all');
@@ -9,7 +10,7 @@ const Events = () => {
 
   useEffect(() => {
     // Fetch events data from the backend
-    fetch("http://localhost:5000/api/events")
+    api.get("/api/events")
       .then(res => res.json())
       .then(data => {
         // Transform the data to match the expected format

@@ -5,7 +5,14 @@ const connectDB = require('./config/db');
 const path = require('path');
 
 const app = express();
-app.use(cors());
+// CORS configuration for production deployment
+const corsOptions = {
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
 // Connect to database
 connectDB();

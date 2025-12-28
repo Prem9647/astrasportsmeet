@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import { api } from '../utils/api';
 
 export default function PublicView() {
   const [teams, setTeams] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/teams")
+    api.get("/api/teams")
       .then(res => res.json())
       .then(data =>
         setTeams(data.sort((a, b) => b.points - a.points))
