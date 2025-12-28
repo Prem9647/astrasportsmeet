@@ -100,12 +100,18 @@ The default admin login credentials are:
 If you encounter the error `command 'react-scripts build' exited with 126` or `Command 'npm run build' exited with 126` during Vercel deployment:
 
 1. The `vercel.json` file in the frontend directory now contains the proper build configuration:
-   - Build Command: `npm run build`
+   - Build Command: `npm run build:optimized`
    - Output Directory: `build`
    - Install Command: `npm install`
    - Dev Command: `npm start`
 2. Make sure your environment variables are properly set in the Vercel dashboard
 3. Check that you're using a compatible Node.js version (14.x or 16.x)
+
+If you encounter "Out of Memory" errors during the build:
+
+1. The build command now uses memory optimization by setting `GENERATE_SOURCEMAP=false`
+2. This reduces the memory footprint during the build process
+3. The `framework` property in `vercel.json` is set to `create-react-app` for optimal handling
 
 ## Technologies Used
 
