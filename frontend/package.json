@@ -19,7 +19,7 @@
     "eject": "react-scripts eject"
   },
   "engines": {
-    "node": "24.x"
+    "node": "22.x"
   },
   "browserslist": {
     "production": [
