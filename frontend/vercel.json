@@ -1,9 +1,9 @@
 {
-  "buildCommand": "npm run build:optimized",
+  "buildCommand": "npm run build",
   "outputDirectory": "build",
-  "devCommand": "npm start",
+  "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "framework": "create-react-app", 
+  "framework": "vite", 
   "routes": [
     {
       "src": "/static/(.*)",
