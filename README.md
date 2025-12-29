@@ -100,7 +100,7 @@ The default admin login credentials are:
 If you encounter the error `command 'react-scripts build' exited with 126` or `Command 'npm run build' exited with 126` during Vercel deployment:
 
 1. The `vercel.json` file in the frontend directory now contains the proper build configuration:
-   - Build Command: `npm run build:optimized`
+   - Build Command: `npm run build`
    - Output Directory: `build`
    - Install Command: `npm install`
    - Dev Command: `npm start`
