@@ -1,9 +1,9 @@
 {
-  "buildCommand": "npm run build:vercel",
+  "buildCommand": "npm run build:optimized",
   "outputDirectory": "build",
-  "devCommand": "npm run dev",
+  "devCommand": "npm start",
   "installCommand": "npm install",
-  "framework": "vite", 
+  "framework": "create-react-app", 
   "routes": [
     {
       "src": "/static/(.*)",
