@@ -1,135 +1,88 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./config/db');
 const path = require('path');
+const connectDB = require('./config/db');
+
+// Import routes
+const indexRoutes = require('./routes/index');
+const teamsRoutes = require('./routes/teams');
+const eventsRoutes = require('./routes/events');
+const adminTeamsRoutes = require('./routes/adminTeams');
+const adminEventsRoutes = require('./routes/adminEvents');
+const adminPlayerManagement = require('./routes/adminPlayerManagement');
+const adminLivePhotos = require('./routes/adminLivePhotos');
 
 const app = express();
+
+// ============================================
+// MIDDLEWARE SETUP (Express Waterfall Pattern)
+// ============================================
+
+// 1. CORS - Must be first to handle preflight requests
 // CORS configuration for production deployment
 // const corsOptions = {
 //   origin: process.env.CLIENT_URL || 'http://localhost:3000',
 //   credentials: true,
 //   optionsSuccessStatus: 200
 // };
-
 app.use(cors());
 
-// Connect to database
-connectDB();
-
-// Import models
-const Team = require('./models/Team');
-const Event = require('./models/Event');
-const LivePhoto = require('./models/LivePhoto');
-
-// Middleware
+// 2. Body parsing middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 3. Static file serving
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Utility function
-const calculatePoints = (team) =>
-  team.gold * 3 + team.silver * 2 + team.bronze + team.bonus;
+// ============================================
+// DATABASE CONNECTION
+// ============================================
+connectDB();
 
-// 🔹 PUBLIC API (Users)
-app.get('/', (req, res) => {
-    res.send('API is running...');
-});
+// ============================================
+// ROUTES (Public routes first, then admin routes)
+// ============================================
 
-app.get("/api/teams", async (req, res) => {
-  const teams = await Team.find();
+// Public routes
+app.use('/', indexRoutes);
+app.use('/api/teams', teamsRoutes);
+app.use('/api/events', eventsRoutes);
 
-  const result = teams.map(team => ({
-    ...team._doc,
-    points: calculatePoints(team)
-  }));
-
-  res.json(result);
-});
-
-// 🔹 ADMIN: Add point
-app.post("/api/admin/add-point", async (req, res) => {
-  const { teamId, type } = req.body;
-
-  await Team.findByIdAndUpdate(teamId, {
-    $inc: { [type]: 1 }
-  });
-
-  res.json({ success: true });
-});
-
-// 🔹 ADMIN: Remove point
-app.post("/api/admin/remove-point", async (req, res) => {
-  const { teamId, type } = req.body;
-
-  // Decrement the point type but ensure it doesn't go below 0
-  await Team.findByIdAndUpdate(teamId, {
-    $inc: { [type]: -1 }
-  });
-
-  res.json({ success: true });
-});
-
-// 🔹 ADMIN: Reset points
-app.post("/api/admin/reset-points", async (req, res) => {
-  const { teamId } = req.body;
-
-  // Reset all point types to 0
-  await Team.findByIdAndUpdate(teamId, {
-    gold: 0,
-    silver: 0,
-    bronze: 0,
-    bonus: 0
-  });
-
-  res.json({ success: true });
-});
-
-// 🔹 ADMIN: Add new team (dynamic teams)
-app.post("/api/admin/add-team", async (req, res) => {
-  const { name } = req.body;
-  await Team.create({ name });
-  res.json({ success: true });
-});
-
-
-// 🔹 PUBLIC: Get all events
-app.get("/api/events", async (req, res) => {
-  const events = await Event.find();
-  res.json(events);
-});
-
-// 🔹 ADMIN: Add event
-app.post("/api/admin/events", async (req, res) => {
-  const event = await Event.create(req.body);
-  res.json(event);
-});
-
-// 🔹 ADMIN: Update event
-app.put("/api/admin/events/:id", async (req, res) => {
-  const updated = await Event.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    { new: true }
-  );
-  res.json(updated);
-});
-
-// 🔹 ADMIN: Delete event
-app.delete("/api/admin/events/:id", async (req, res) => {
-  await Event.findByIdAndDelete(req.params.id);
-  res.json({ success: true });
-});
-
-// Import new routes
-const adminPlayerManagement = require('./routes/adminPlayerManagement');
-const adminLivePhotos = require('./routes/adminLivePhotos');
-
-// Use new routes
+// Admin routes
+app.use('/api/admin', adminTeamsRoutes);
+app.use('/api/admin', adminEventsRoutes);
 app.use('/api/admin', adminPlayerManagement);
 app.use('/api/admin', adminLivePhotos);
 
+// ============================================
+// ERROR HANDLING MIDDLEWARE
+// ============================================
+
+// 404 handler - Must be after all routes
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
+  });
+});
+
+// Global error handler - Must be last
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Internal server error'
+  });
+});
+
+// ============================================
+// SERVER STARTUP
+// ============================================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
+
+module.exports = app;
