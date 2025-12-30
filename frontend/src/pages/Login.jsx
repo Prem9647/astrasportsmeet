@@ -1,22 +1,35 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { api, setAuthToken } from '../utils/api';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Check credentials
-    if (username === 'Premkumar' && password === 'Prem@6406') {
-      // Store authentication status in localStorage
-      localStorage.setItem('isAdminAuthenticated', 'true');
-      navigate('/admin'); // Redirect to admin page after successful login
-    } else {
-      setError('Invalid username or password');
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await api.post('/api/auth/login', { username, password });
+      const data = await response.json();
+
+      if (data.success && data.token) {
+        // Store JWT token in localStorage
+        setAuthToken(data.token);
+        navigate('/admin'); // Redirect to admin page after successful login
+      } else {
+        setError(data.message || 'Invalid username or password');
+      }
+    } catch (err) {
+      setError('Login failed. Please try again.');
+      console.error('Login error:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,7 +59,9 @@ export default function Login() {
               required
             />
           </div>
-          <button type="submit" className="btn">Login</button>
+          <button type="submit" className="btn" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
         </form>
         <p className="login-link">
           <Link to="/">Back to Home</Link>

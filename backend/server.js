@@ -6,6 +6,7 @@ const connectDB = require('./config/db');
 
 // Import routes
 const indexRoutes = require('./routes/index');
+const authRoutes = require('./routes/auth');
 const teamsRoutes = require('./routes/teams');
 const eventsRoutes = require('./routes/events');
 const adminTeamsRoutes = require('./routes/adminTeams');
@@ -46,6 +47,7 @@ connectDB();
 
 // Public routes
 app.use('/', indexRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/teams', teamsRoutes);
 app.use('/api/events', eventsRoutes);
 
