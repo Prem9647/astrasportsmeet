@@ -9,10 +9,12 @@ const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/auth');
 const teamsRoutes = require('./routes/teams');
 const eventsRoutes = require('./routes/events');
+const imagesRoutes = require('./routes/images');
 const adminTeamsRoutes = require('./routes/adminTeams');
 const adminEventsRoutes = require('./routes/adminEvents');
 const adminPlayerManagement = require('./routes/adminPlayerManagement');
 const adminLivePhotos = require('./routes/adminLivePhotos');
+const adminImages = require('./routes/adminImages');
 
 const app = express();
 
@@ -33,7 +35,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 3. Static file serving
+// 3. Static file serving (kept for backward compatibility with existing local files)
+// Note: New uploads are stored in AWS S3, not locally
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ============================================
@@ -50,12 +53,14 @@ app.use('/', indexRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/teams', teamsRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/api/images', imagesRoutes);
 
 // Admin routes
 app.use('/api/admin', adminTeamsRoutes);
 app.use('/api/admin', adminEventsRoutes);
 app.use('/api/admin', adminPlayerManagement);
 app.use('/api/admin', adminLivePhotos);
+app.use('/api/admin', adminImages);
 
 // ============================================
 // ERROR HANDLING MIDDLEWARE

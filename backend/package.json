@@ -14,6 +14,7 @@
     "node": ">=16.0.0"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.490.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",

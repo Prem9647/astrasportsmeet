@@ -2,13 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../utils/api';
 
 const Images = () => {
-  const [livePhotos, setLivePhotos] = useState([]);
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch live photos from the API
-    api.get("/api/admin/live-photos")
+    // Fetch images from the API
+    setLoading(true);
+    api.get("/api/images")
       .then(res => res.json())
-      .then(photos => setLivePhotos(photos));
+      .then(data => {
+        setImages(data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching images:', error);
+        setLoading(false);
+      });
   }, []);
   return (
     <>
@@ -34,32 +43,45 @@ const Images = () => {
 
 
 
-      {/* Live Photos Section */}
-      {livePhotos.length > 0 && (
-        <section>
-          <div className="container">
-            <div className="section-title">
-              <h2 style={{ color: 'white' }}>Event Gallery</h2>
-              <p>Latest moments from the ongoing events</p>
+      {/* Gallery Images Section */}
+      <section>
+        <div className="container">
+          <div className="section-title">
+            <h2 style={{ color: 'white' }}>Event Gallery</h2>
+            <p>Latest moments from the ongoing events</p>
+          </div>
+          
+          {loading ? (
+            <div style={{ textAlign: 'center', color: 'white', padding: '2rem' }}>
+              <p>Loading images...</p>
             </div>
-            
+          ) : images.length > 0 ? (
             <div className="gallery-container">
-              {livePhotos.map((photo, index) => (
-                <div key={photo._id || index} className="gallery-item">
+              {images.map((image, index) => (
+                <div key={image._id || index} className="gallery-item">
                   <div className="gallery-image" style={{ 
-                    backgroundImage: `url('${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${photo.imageUrl}')`,
+                    backgroundImage: `url('${image.imageUrl}')`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center'
                   }}></div>
+                  {image.title && (
+                    <div className="photo-title">
+                      {image.title}
+                    </div>
+                  )}
                   <div className="photo-timestamp">
-                    {new Date(photo.timestamp).toLocaleString()}
+                    {new Date(image.timestamp).toLocaleString()}
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div style={{ textAlign: 'center', color: 'white', padding: '2rem' }}>
+              <p>No images available yet. Check back soon!</p>
+            </div>
+          )}
+        </div>
+      </section>
     </>
   );
 };

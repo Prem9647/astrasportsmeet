@@ -1,31 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 const LivePhoto = require("../models/LivePhoto");
 const adminAuth = require("../middleware/adminAuth");
+const { uploadToS3 } = require("../utils/s3Upload");
 
-// Create uploads directory if it doesn't exist
-const uploadDir = path.join(__dirname, "..", "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    // Create a unique filename with timestamp
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'live-photo-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
+// Configure multer to use memory storage (we'll upload directly to S3)
 const upload = multer({ 
-  storage: storage,
+  storage: multer.memoryStorage(), // Store file in memory instead of disk
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
   },
@@ -40,7 +22,7 @@ const upload = multer({
 });
 
 // Admin route to upload live photo
-router.post("/upload-photo", upload.single("photo"), async (req, res) => {
+router.post("/upload-photo", adminAuth, upload.single("photo"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ 
@@ -49,9 +31,17 @@ router.post("/upload-photo", upload.single("photo"), async (req, res) => {
       });
     }
 
-    // Create new live photo document
+    // Upload file to S3
+    const s3Url = await uploadToS3(
+      req.file.buffer,
+      req.file.originalname,
+      req.file.mimetype,
+      'live-photos'
+    );
+
+    // Create new live photo document with S3 URL
     const livePhoto = new LivePhoto({
-      imageUrl: `/uploads/${req.file.filename}`
+      imageUrl: s3Url
     });
 
     const savedPhoto = await livePhoto.save();
