@@ -40,7 +40,7 @@ const upload = multer({
 });
 
 // Admin route to upload live photo
-router.post("/upload-photo", adminAuth, upload.single("photo"), async (req, res) => {
+router.post("/upload-photo", upload.single("photo"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ 
