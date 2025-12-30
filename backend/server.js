@@ -6,13 +6,13 @@ const path = require('path');
 
 const app = express();
 // CORS configuration for production deployment
-const corsOptions = {
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true,
-  optionsSuccessStatus: 200
-};
+// const corsOptions = {
+//   origin: process.env.CLIENT_URL || 'http://localhost:3000',
+//   credentials: true,
+//   optionsSuccessStatus: 200
+// };
 
-app.use(cors(corsOptions));
+app.use(cors());
 
 // Connect to database
 connectDB();
@@ -130,3 +130,6 @@ app.use('/api/admin', adminLivePhotos);
 
 const PORT = process.env.PORT || 5000;
 
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
